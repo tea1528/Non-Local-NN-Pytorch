@@ -20,7 +20,7 @@ import torch.nn.functional as F
 import torch.nn.init as init
 
 from torch.autograd import Variable
-from models.non_local_embedded_gaussian import NONLocalBlock2D
+from models.non_local import NLBlockND
 
 
 def _weights_init(m):
@@ -97,7 +97,7 @@ class ResNet2D(nn.Module):
             self.in_planes = planes * block.expansion
         
         if non_local:
-            layers.append(NONLocalBlock2D(in_channels=32, sub_sample=False))
+            layers.append(NLBlockND(in_channels=32, dimension=2))
             layers.append(block(self.in_planes, planes, strides[-1]))
         
         return nn.Sequential(*layers)

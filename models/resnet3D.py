@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import math
 from functools import partial
-from non_local_embedded_gaussian import NONLocalBlock3D
+from models.non_local import NLBlockND
 
 
 class Bottleneck(nn.Module):
@@ -122,7 +122,7 @@ class ResNet3D(nn.Module):
         
         # add non-local block here
         if non_local:
-            layers.append(NONLocalBlock3D(in_channels=1024, sub_sample=False))
+            layers.append(NLBlockND(in_channels=1024, dimension=3))
             layers.append(block(self.inplanes, planes))
             
         return nn.Sequential(*layers)
