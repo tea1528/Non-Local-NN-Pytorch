@@ -1,1 +1,1 @@
-nohup python main.py --lr 0.1 >> nonlocal_output.txt &
+python main.py --verbose 2>&1 | tee regular_output.txt
