@@ -1,0 +1,1 @@
+python main.py --sample_size 224 --root_path ./data --video_path hmdb51/jpg --annotation_path hmdb51_1.json --result_path results --dataset hmdb51 --model resnet --model_depth 50 --n_classes 51 --batch_size 32 --n_threads 4 --checkpoint 5 2>&1 | tee output_hmdb.txt
