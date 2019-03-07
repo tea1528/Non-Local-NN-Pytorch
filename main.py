@@ -13,15 +13,17 @@ import torchvision.transforms as transforms
 import os
 import argparse
 
-from resnet import *
-from utils import progress_bar
-from resnet_nl import *
+from models.resnet2D import resnet2D56
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-parser.add_argument('--gpu', default=0, type=int, help='gpu device number')
+parser.add_argument('--verbose', '-v', action='store_true', help='display progress bar')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--nl', '-n', action='store_true', help='add non-local block')
 args = parser.parse_args()
+
+if args.verbose:
+    from utils import progress_bar
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
@@ -51,20 +53,17 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 # Model
 print('==> Building model..')
-# net = VGG('VGG19')
-net = resnet56()
-#net = resnet50()
-# net = PreActResNet18()
-# net = GoogLeNet()
-# net = DenseNet121()
-# net = ResNeXt29_2x64d()
-# net = MobileNet()
-# net = MobileNetV2()
-# net = DPN92()
-# net = ShuffleNetG2()
-# net = SENet18()
-#net = ShuffleNetV2(1)
+if args.nl:
+    print("ResNet-56 with non-local block after second residual block..")
+    net = resnet2D56(non_local=True)
+else:
+    print("ResNet-56 without non-local block..")
+    net = resnet2D56(non_local=False)
+
+
+
 net = net.to(device)
+
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
@@ -102,8 +101,12 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        if args.verbose:
+            progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    if not args.verbose:
+        print('Loss: %.3f' % train_loss)
+
     return train_loss
 
 def test(epoch):
@@ -122,9 +125,13 @@ def test(epoch):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            
+            if args.verbose:
+                progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                    % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-            progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    if not args.verbose:
+        print('Loss: %.3f' % test_loss)
 
     # Save checkpoint.
     acc = 100.*correct/total
@@ -150,6 +157,9 @@ for epoch in range(start_epoch, start_epoch+200):
     test_l = test(epoch)
     tr_loss_list.append(train_l)
     tst_loss_list.append(test_l)
+
+print("Best Accuracy: ", best_acc)
+print("-----------------------------------------------")
 
 print("train loss")
 print(tr_loss_list)

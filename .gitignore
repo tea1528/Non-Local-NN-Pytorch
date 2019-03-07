@@ -2,3 +2,4 @@ __pycache__
 data/
 checkpoint/
 *.txt
+plot_loss.ipynb
