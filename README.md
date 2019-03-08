@@ -47,6 +47,7 @@ This could be due to two reasons: 1) the proposed task was mainly for video clas
 This repo is an adaptation from several other exisitng works.
 - https://github.com/akamaster/pytorch_resnet_cifar10
 - https://github.com/kuangliu/pytorch-cifar
+- https://github.com/facebookresearch/video-nonlocal-net
 - https://github.com/AlexHex7/Non-local_pytorch
 - https://github.com/kenshohara/3D-ResNets-PyTorch
 

@@ -6,7 +6,7 @@ from torch.nn import functional as F
 class NLBlockND(nn.Module):
     def __init__(self, in_channels, inter_channels=None, mode='embedded', 
                  dimension=3, bn_layer=True):
-        """Implementation of Non-Local Block with 4 different pairwise functions
+        """Implementation of Non-Local Block with 4 different pairwise functions but doesn't include subsampling trick
         args:
             in_channels: original channel size (1024 in the paper)
             inter_channels: channel size inside the block if not specifed reduced to half (512 in the paper)
@@ -56,10 +56,13 @@ class NLBlockND(nn.Module):
                     conv_nd(in_channels=self.inter_channels, out_channels=self.in_channels, kernel_size=1),
                     bn(self.in_channels)
                 )
+            # from section 4.1 of the paper, initializing params of BN ensures that the initial state of non-local block is identity mapping
             nn.init.constant_(self.W_z[1].weight, 0)
             nn.init.constant_(self.W_z[1].bias, 0)
         else:
             self.W_z = conv_nd(in_channels=self.inter_channels, out_channels=self.in_channels, kernel_size=1)
+
+            # from section 3.3 of the paper by initializing Wz to 0, this block can be inserted to any existing architecture
             nn.init.constant_(self.W_z.weight, 0)
             nn.init.constant_(self.W_z.bias, 0)
 
@@ -83,6 +86,7 @@ class NLBlockND(nn.Module):
         batch_size = x.size(0)
         
         # (N, C, THW)
+        # this reshaping and permutation is from the spacetime_nonlocal function in the original Caffe2 implementation
         g_x = self.g(x).view(batch_size, self.inter_channels, -1)
         g_x = g_x.permute(0, 2, 1)
 
