@@ -87,19 +87,19 @@ class ResNet2D(nn.Module):
     def _make_layer(self, block, planes, num_blocks, stride, non_local=False):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
-        
+
         last_idx = len(strides)
         if non_local:
             last_idx = len(strides) - 1
-            
+
         for i in range(last_idx):
             layers.append(block(self.in_planes, planes, strides[i]))
             self.in_planes = planes * block.expansion
-        
+
         if non_local:
-            layers.append(NLBlockND(in_channels=32, dimension=2))
+            layers.append(NLBlockND(in_channels=planes, dimension=2))
             layers.append(block(self.in_planes, planes, strides[-1]))
-        
+
         return nn.Sequential(*layers)
 
     def forward(self, x):

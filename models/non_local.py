@@ -73,7 +73,7 @@ class NLBlockND(nn.Module):
         
         if self.mode == "concatenate":
             self.W_f = nn.Sequential(
-                    nn.Conv2d(in_channels=self.inter_channel * 2, out_channels=1, kernel_size=1),
+                    nn.Conv2d(in_channels=self.inter_channels * 2, out_channels=1, kernel_size=1),
                     nn.ReLU()
                 )
             
